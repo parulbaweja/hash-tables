@@ -45,18 +45,11 @@ class HashTable(object):
                     cur = cur.next
         raise KeyError(key + ' is not in the table')
 
-    def get(self, key):
-        hashed = hashlib.md5(key)
-        bucket = int(hashed.hexdigest(), 16) % self.n
-
-        cur = self.arr[bucket]
-        if cur is not None:
-            while cur is not None:
-                if cur.key == key:
-                    return cur.val
-                else:
-                    cur = cur.next
-        return None
+    def get(self, key, default=None):
+        try:
+            return self.lookup(key)
+        except KeyError:
+            return default
 
     def delete(self, key):
         hashed = hashlib.md5(key)
@@ -78,6 +71,7 @@ class HashTable(object):
                 else:
                     parent = cur
                     cur = cur.next
+        self.m -= 1
 
 
     def check_load(self):
