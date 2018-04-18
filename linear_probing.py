@@ -34,7 +34,8 @@ class HashTable(object):
                 self.m += 1
                 return
             # increment bucket
-            cur = int(bucket + base / 2.0 + (base ** self.probe) / 2.0) % self.n
+            cur = int(bucket + base / 2.0 +
+                      (base ** self.probe) / 2.0) % self.n
             base += 1
 
     def lookup(self, key):
@@ -47,7 +48,8 @@ class HashTable(object):
                 raise KeyError(key + ' is not in the table')
             if self.arr[cur].key == key and not self.arr[cur].tombstone:
                 return self.arr[cur].val
-            cur = int(bucket + base / 2.0 + (base ** self.probe) / 2.0) % self.n
+            cur = int(bucket + base / 2.0 +
+                      (base ** self.probe) / 2.0) % self.n
             # naive implementation causes loop shown in note below
             # cur = (bucket + base ** self.probe) % self.n
             base += 1
@@ -69,7 +71,8 @@ class HashTable(object):
             if self.arr[cur].key == key and not self.arr[cur].tombstone:
                 self.arr[cur].tombstone = True
                 self.m -= 1
-            cur = int(bucket + base / 2.0 + (base ** self.probe) / 2.0) % self.n
+            cur = int(bucket + base / 2.0 +
+                      (base ** self.probe) / 2.0) % self.n
             base += 1
 
     def check_load(self):
@@ -111,4 +114,3 @@ if __name__ == '__main__':
         for key in lst:
             table.delete(key)
             assert table.get(key) is None
-
