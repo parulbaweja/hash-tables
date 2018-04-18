@@ -35,7 +35,7 @@ In the list above, bucket 15 is filled and we trying to insert an item that hash
 When an element that lives in its destined bucket is removed, that element must be converted to a tombstone. It now serves as a marker that other elements, with the same destined bucket, live further on or around the list. The tombstone remains until such time that another element with the same destined bucket is inserted - the new element now replaces the tombstone.
 
 Considerations:
-1. Naively, I implemented the following quadatric probing function to find the index of the next bucket to search:
+Naively, I implemented the following quadatric probing function to find the index of the next bucket to search:
 
     next_bucket = (bucket + base ** probe) % n
 
@@ -44,20 +44,22 @@ Considerations:
         - base = 1, 2, 3, 4, etc
         - probe = a selected constant for the exponent
         - n = length of list
+
 This function caused an infinite loop because the same four indices were being visited. This loop was particularly interesting to debug.
 
 For a table with n = 16, initial bucket = 0 and probe = 2, let's track the next_bucket.
 
-| i | bucket + base ** probe | % n |
-|:-:|:----------------------:|:---:|
-| 0 | 0                      | 0   |
-| 1 | 1                      | 1   |
-| 2 | 4                      | 4   |
-| 3 | 9                      | 9   |
-| 4 | 16                     | 0   |
-| 5 | 25                     | 9   |
-| 6 | 36                     | 4   |
-| 7 | 49                     | 1   |
+| i | bucket          | % n |
+|   | + base ** probe |     |
+|:-:|:---------------:|:---:|
+| 0 | 0               | 0   |
+| 1 | 1               | 1   |
+| 2 | 4               | 4   |
+| 3 | 9               | 9   |
+| 4 | 16              | 0   |
+| 5 | 25              | 9   |
+| 6 | 36              | 4   |
+| 7 | 49              | 1   |
 
 As displayed in the '% n' column, the same buckets are visited every four iterations, so we never search all the buckets. After research, it turns out that a power-of-two table must have the following quadratic function:
 
