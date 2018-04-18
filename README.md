@@ -18,9 +18,9 @@ Each implementation includes a load factor threshold of 0.9 (inserted elements /
 Summary: In this implementation, the HashElement class includes key, value and next attributes. Each bucket takes the form of a linked list. If a collision occurs (where two disparate keys hash and mod to the same bucket), the item to be inserted is simply set as the next for the head or parent element.
 
 Considerations:
-1. Inserting and looking up a new key-value pair is approximately O(k), with k being the number of HashElements in a particular bucket.
-2. Removing a key-value pair is O(1) in a particular bucket.
-3. Linked lists do not allow for great cache locality, as nodes are dispersed throughout memory. Cache locality is inherently beneficial for a hash table, as a user would potentially look up values, or similar ones multiple times.
+1) Inserting and looking up a new key-value pair is approximately O(k), with k being the number of HashElements in a particular bucket.
+2) Removing a key-value pair is O(1) in a particular bucket.
+3) Linked lists do not allow for great cache locality, as nodes are dispersed throughout memory. Cache locality is inherently beneficial for a hash table, as a user would potentially look up values, or similar ones multiple times.
 
 ### Linear & Quadratic Probing
 Summary: In linear probing, to find an element, we can search the i + 0, i + 1, i + 2 indices and so on. The first element that hashes and mods to a particular bucket is inserted at that index. Thereafter, elements that also hash and mod to the same particular bucket are inserted at the first available spot after the original bucket. The implementation must accommodate a wrap-around. Let's look at an example:
@@ -35,7 +35,7 @@ In the list above, bucket 15 is filled and we trying to insert an item that hash
 When an element that lives in its destined bucket is removed, that element must be converted to a tombstone. It now serves as a marker that other elements, with the same destined bucket, live further on or around the list. The tombstone remains until such time that another element with the same destined bucket is inserted - the new element now replaces the tombstone.
 
 Considerations:
-Naively, I implemented the following quadatric probing function to find the index of the next bucket to search:
+1) Naively, I implemented the following quadatric probing function to find the index of the next bucket to search:
 
     next_bucket = (bucket + base ** probe) % n
 
@@ -49,17 +49,16 @@ This function caused an infinite loop because the same four indices were being v
 
 For a table with n = 16, initial bucket = 0 and probe = 2, let's track the next_bucket.
 
-| i | bucket          | % n |
-|   | + base ** probe |     |
-|:-:|:---------------:|:---:|
-| 0 | 0               | 0   |
-| 1 | 1               | 1   |
-| 2 | 4               | 4   |
-| 3 | 9               | 9   |
-| 4 | 16              | 0   |
-| 5 | 25              | 9   |
-| 6 | 36              | 4   |
-| 7 | 49              | 1   |
+| i | bucket + base ** probe | % n |
+|:-:|:----------------------:|:---:|
+| 0 | 0                      | 0   |
+| 1 | 1                      | 1   |
+| 2 | 4                      | 4   |
+| 3 | 9                      | 9   |
+| 4 | 16                     | 0   |
+| 5 | 25                     | 9   |
+| 6 | 36                     | 4   |
+| 7 | 49                     | 1   |
 
 As displayed in the '% n' column, the same buckets are visited every four iterations, so we never search all the buckets. After research, it turns out that a power-of-two table must have the following quadratic function:
 
@@ -88,14 +87,16 @@ To insert a key, we now compare the distances if keys from their respective buck
 [ 15, 15, 0, 1, 2, ... 15]
 
 Now, we want to insert a key that falls in the 0 bucket. Here's what we do:
-1. Go to the 0 bucket. If nothing is there, insert it.
-2. Unfortunately, something is in the 0 bucket. So, let's compare how far the current element is from it's home bucket versus our insert element:
+1) Go to the 0 bucket. If nothing is there, insert it.
+2) Unfortunately, something is in the 0 bucket. So, let's compare how far the current element is from it's home bucket versus our insert element:
+
     15 is 1 away from its home bucket due to wrap-around
     0 is 0 away from its home bucket
-3. Since 15 is further from it's home, we leave it there and keep searching.
+
+3) Since 15 is further from it's home, we leave it there and keep searching.
 
 Based on this, we only insert if the current element distance is less than the insert element distance. At this point, we swap the elements and recurse.
 
 Considerations:
-1. This is similar to chaining (elements with same bucket exist within a linked list), however it takes advantage of cache locality due to a list's contiguous storage in memory.
-2. Search time reduces - the overhead is in finding the first element with that bucket, but once we find it, we iterate through the list until we hit an element with a larger bucket.
+1) This is similar to chaining (elements with same bucket exist within a linked list), however it takes advantage of cache locality due to a list's contiguous storage in memory.
+2) Search time reduces - the overhead is in finding the first element with that bucket, but once we find it, we iterate through the list until we hit an element with a larger bucket.
