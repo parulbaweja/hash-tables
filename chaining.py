@@ -1,5 +1,6 @@
 import hashlib
 
+
 class HashTable(object):
     def __init__(self):
         self.arr = [None for i in xrange(16)]
@@ -33,6 +34,7 @@ class HashTable(object):
                 self.m += 1
 
     def lookup(self, key):
+        scans = 1
         hashed = hashlib.md5(key)
         bucket = int(hashed.hexdigest(), 16) % self.n
 
@@ -40,9 +42,11 @@ class HashTable(object):
         if cur is not None:
             while cur is not None:
                 if cur.key == key:
-                    return cur.val
+                    return cur.val, scans
                 else:
+                    scans += 1
                     cur = cur.next
+
         raise KeyError(key + ' is not in the table')
 
     def get(self, key, default=None):
@@ -72,7 +76,6 @@ class HashTable(object):
                     parent = cur
                     cur = cur.next
         self.m -= 1
-
 
     def check_load(self):
         load_factor = self.m / float(self.n)
@@ -124,8 +127,13 @@ if __name__ == '__main__':
         lst.append(key)
 
     # test that lookup successful for each inserted key
+    scans = []
     for key in lst:
-        cur.lookup(key)
+        val, scan = cur.lookup(key)
+        scans.append(scan)
+
+    print scans
+    print sum(scans) / 1000.0
 
     # test that key does not exist in table
     key = ''.join(random.sample(chars, 4))

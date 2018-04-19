@@ -14,16 +14,15 @@ In this implementation, the HashElement class includes key, value and next attri
 
 ### Considerations
 
-1) Inserting and looking up a new key-value pair is approximately O(k), with k being the number of HashElements in a particular bucket.
-2) Removing a key-value pair is O(1) in a particular bucket.
-3) Linked lists do not allow for great cache locality, as nodes are dispersed throughout memory. Cache locality is inherently beneficial for a hash table, as a user would potentially look up values, or similar ones multiple times.
-4) In its worse case, all keys hash to the same spot, so search is O(n). Ideally, each slot holds the average number of keys.
+1. Technically, lookup, insert and delete are O(kᵢ), where kᵢ is the number of elements in the ith bucket. However, on average with a well distributed hash function, this tends to be a constant, allowing for O(1) runtime on these operations.
+2. Linked lists do not optimize for cache locality, as nodes are dispersed throughout memory.
+3. In its worse case, all keys hash to the same spot, so search is O(n). Ideally, each slot holds the average number of keys.
 
 ## Linear & Quadratic Probing
 
 ### Summary
 
-In linear probing, to find an element, we can search the i + 0, i + 1, i + 2 indices and so on. The first element that hashes and mods to a particular bucket is inserted at that index. Thereafter, elements that also hash and mod to the same particular bucket are inserted at the first available spot after the original bucket. The implementation must accommodate a wrap-around. Let's look at an example:
+In linear probing, to find an element, we can search the i + 0, i + 1, i + 2 indices and so on. The first element that lands in a particular bucket is inserted at that index. Thereafter, elements that also land in the same particular bucket are inserted at the first available spot after the original bucket.
 
 ```python
 [None, None, 2, 3, 4, 5, 6, None, 8, 9, 10, None, 12, 13, 14, 15]
@@ -33,11 +32,11 @@ In the list above (n = 16), bucket 15 is filled and we trying to insert an item 
 
   16 (current index)  % 16 (list size) = 0
 
-When an element that lives in its destined bucket is removed, that element must be converted to a tombstone. It now serves as a marker that other elements, with the same destined bucket, live further on or around the list. The tombstone remains until such time that another element with the same destined bucket is inserted - the new element now replaces the tombstone.
+When an element is removed, it must be converted to a tombstone. It now serves as a marker that other elements, that fall into that bucket, live further on or around the list. The tombstone remains until such time that a new element is inserted into the bucket. My lookup continues until it hits an empty slot: tombstones prevent search misses.
 
-### Considerations
+### Quadratic Version
 
-Naively, I implemented the following quadatric probing function to find the index of the next bucket to search:
+Naively, I implemented the following quadatric probing function (for linear, probe = 1) to find the index of the next bucket to search:
 
 ```python
     next_bucket = (bucket + base ** probe) % n
@@ -50,7 +49,7 @@ where:
 - probe = a selected constant for the exponent
 - n = length of list
 
-This function caused an infinite loop because the same four indices were being visited. This loop was particularly interesting to debug.
+For probe = 2, this function caused an infinite loop because the same four indices were being visited. This loop was particularly interesting to debug.
 
 For a table with n = 16, initial bucket = 0 and probe = 2, let's track the next_bucket.
 
@@ -109,12 +108,14 @@ Based on this, we only insert if the current element distance is less than the i
 
 ### Considerations
 
-1) This is similar to chaining (elements with same bucket exist within a linked list) in that elements are grouped near each other, however it takes advantage of cache locality due to a list's contiguous storage in memory.
-2) Search time reduces - the overhead is in finding the first element with that bucket, but once we find it, we iterate through the list until we hit an element with a larger bucket.
-3) An optimization of this method would involve storing indices on HashElements. This would reduce the overhead mentioned in the previous bullet.
+1. This is similar to chaining (elements with same bucket exist within a linked list) in that elements are grouped near each other, however it takes advantage of cache locality due to a list's contiguous storage in memory.
+2. Search time reduces - the overhead is in finding the first element with that bucket, but once we find it, we iterate through the list until we hit an element with a larger bucket.
+3. An optimization of this method would involve storing the list index of the first element in the list that belongs to this bucket. This would reduce the number of scans it takes to find elements that belong to said bucket.
 
-```python
-[0, 0, 0, 1, 2, 2, 3, 3, 4]
-```
+## Benchmarking Scans
 
-If we were searching for bucket 1, we would arrive at lst[1] = 0. On this element, we can store the index of the first time we have a 1 - index 3. So, when looking for 1, we arrive at lst[1], ask for the stored index, which is 3 and hop straight there.
+To reach a better conclusion in terms of comparing the methods, I chose to examine the average number of scans each method takes to lookup a key. For each method, I inserted the same, randomly generated list of key-value pairs, called a lookup on each key in the list and kept track of the scans until the key was found.
+
+![Average Number of Scans to Lookup per Table Size] (https://github.com/parulbaweja/hash-tables/blob/master/images/benchmark_scans.jpg)
+
+The graph displays that scans remain constant for each method. In particular, chaining requires the fewest scans: the items are distributed evenly, so we reach a bucket immediately and iterate until we find the item. Meanwhile, linear probing requires the most scans, as the item is inserted at the next available empty bucket. For robinhood, the implementation would really take advantage of cache locality if the optimization (listed in Considerations) was implemented; then, robinhood's performance would be near that of chaining's.

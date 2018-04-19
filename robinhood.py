@@ -68,6 +68,7 @@ class HashTable(object):
     def lookup(self, key):
         elem = HashElement(key, value=None)
         bucket = self._get_bucket_idx(elem.hashed)
+        scans = 1
 
         while True:
             if self.arr[bucket] is None:
@@ -91,8 +92,9 @@ class HashTable(object):
                 if self.arr[bucket].key == elem.key:
                     if self.arr[bucket].tombstone:
                         return
-                    return self.arr[bucket].value
+                    return self.arr[bucket].value, scans
                 bucket = (bucket + 1) % self.n
+            scans += 1
 
     def get(self, key, default=None):
         try:
@@ -161,8 +163,12 @@ if __name__ == '__main__':
         table.insert(key, value)
         lst.append(key)
 
+    scans = []
     for key in lst:
-        table.lookup(key)
+        val, scan = table.lookup(key)
+        scans.append(scan)
+    print scans
+    print sum(scans) / float(len(scans))
 
     key = ''.join(random.sample(chars, 4))
     assert table.get(key) is None

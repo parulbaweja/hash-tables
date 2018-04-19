@@ -42,17 +42,19 @@ class HashTable(object):
         bucket = self._hash_key(key)
         cur = bucket
         base = 1
+        scans = 1
 
         while True:
             if self.arr[cur] is None:
                 raise KeyError(key + ' is not in the table')
             if self.arr[cur].key == key and not self.arr[cur].tombstone:
-                return self.arr[cur].val
+                return self.arr[cur].val, scans
             cur = int(bucket + base / 2.0 +
                       (base ** self.probe) / 2.0) % self.n
             # naive implementation causes loop shown in note below
             # cur = (bucket + base ** self.probe) % self.n
             base += 1
+            scans += 1
 
     def get(self, key, default=None):
         try:
@@ -94,7 +96,7 @@ if __name__ == '__main__':
     import random
     import string
 
-    for probe in (1, 2, 3):
+    for probe in (1, 2):
         table = HashTable(probe)
         lst = []
         chars = string.ascii_letters + string.digits
@@ -105,8 +107,12 @@ if __name__ == '__main__':
             table.insert(key, value)
             lst.append(key)
 
+        scans = []
         for key in lst:
-            table.lookup(key)
+            val, scan = table.lookup(key)
+            scans.append(scan)
+        print scans
+        print sum(scans) / 1000.0
 
         key = ''.join(random.sample(chars, 4))
         assert table.get(key) is None
