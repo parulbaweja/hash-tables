@@ -2,6 +2,8 @@
 
 This repo contains three implementations of a hash table with the following applied concepts: chaining, linear probing and robinhood. Each explores a different framework for space management and information retrieval.
 
+Check out my [Medium post on hash tables](https://medium.com/@parulbaweja8/hash-tables-f369b8ff1a8a)
+
 Each key is hashed with Python's md5, built into the hashlib library. To find the specific bucket a key falls into, the hashed value is mod-ed by the length of the list (hash_value % n).
 
 Each implementation includes a load factor threshold of 0.9 (inserted elements / length of list). If the load factor increases, the allocated storage must be resized. All implementations follow the model of doubling the allocated storage. Each element is re-hashed and re-inserted in a new list, which replaces the current list.
