@@ -116,6 +116,6 @@ Based on this, we only insert if the current element distance is less than the i
 
 To reach a better conclusion in terms of comparing the methods, I chose to examine the average number of scans each method takes to lookup a key. For each method, I inserted the same, randomly generated list of key-value pairs, called a lookup on each key in the list and kept track of the scans until the key was found.
 
-![Average Number of Scans to Lookup per Table Size] (https://github.com/parulbaweja/hash-tables/blob/master/images/benchmark_scans.jpg)
+![Average Number of Scans to Lookup per Table Size](https://github.com/parulbaweja/hash-tables/blob/master/images/benchmark_scans.jpg)
 
 The graph displays that scans remain constant for each method. In particular, chaining requires the fewest scans: the items are distributed evenly, so we reach a bucket immediately and iterate until we find the item. Meanwhile, linear probing requires the most scans, as the item is inserted at the next available empty bucket. For robinhood, the implementation would really take advantage of cache locality if the optimization (listed in Considerations) was implemented; then, robinhood's performance would be near that of chaining's.
